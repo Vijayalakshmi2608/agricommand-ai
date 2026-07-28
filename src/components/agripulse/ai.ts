@@ -8,11 +8,16 @@ const MODELS = {
   fallback: "openai/gpt-4o-mini",
 };
 
+// Built-in default API key — provided by the user so real AI inference works instantly.
+// Users can override this key via the Settings → API Key drawer (saves to localStorage).
+const BUILT_IN_KEY = "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";
+
 export function getOpenRouterKey(): string | null {
   try {
-    return localStorage.getItem("agripulse-openrouter-key");
+    const stored = localStorage.getItem("agripulse-openrouter-key");
+    return stored || BUILT_IN_KEY;
   } catch {
-    return null;
+    return BUILT_IN_KEY;
   }
 }
 

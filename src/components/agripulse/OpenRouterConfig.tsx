@@ -115,16 +115,29 @@ export default function OpenRouterConfig({ open, onClose }: OpenRouterConfigProp
 
             {/* Body */}
             <div className="px-6 py-5 space-y-4">
-              <div className="rounded-xl bg-emerald-500/5 border border-emerald-500/10 p-3">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="h-4 w-4 text-emerald-400 mt-0.5 flex-shrink-0" />
-                  <div className="text-[11px] text-gray-300 leading-relaxed">
-                    <strong className="text-emerald-300">API key optional.</strong> The app works
-                    with intelligent mock AI responses when no key is provided. Add an OpenRouter
-                    key to enable real-time AI-powered grading and analysis.
+              {hasExisting ? (
+                <div className="rounded-xl bg-emerald-500/8 border border-emerald-500/20 p-3">
+                  <div className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+                    <div className="text-[11px] text-gray-300 leading-relaxed">
+                      <strong className="text-emerald-300">AI key is active.</strong>
+                      Real-time AI inference is enabled for crop grading, voice parsing,
+                      and glut detection. Override below or keep the built-in key.
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="rounded-xl bg-emerald-500/5 border border-emerald-500/10 p-3">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="h-4 w-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+                    <div className="text-[11px] text-gray-300 leading-relaxed">
+                      <strong className="text-emerald-300">API key optional.</strong> The app works
+                      with intelligent mock AI responses when no key is provided. Add an OpenRouter
+                      key to enable real-time AI-powered grading and analysis.
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <label className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
