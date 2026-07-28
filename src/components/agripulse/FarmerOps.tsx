@@ -22,12 +22,14 @@ import {
   CheckCircle2,
   BookOpen,
   Navigation,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CROP_TYPES, CROP_IMAGES, CropGradeResult, GlutAlert, VoiceCommand, CarbonPassport } from "./types";
 import { gradeCrop, getGlutAlerts, parseVoiceCommand } from "./ai";
 import { MOCK_CARBON_PASSPORT } from "./data";
+import Analytics from "./Analytics";
 
 // ============================================================
 // SECTION 2: CROP GRADING PORTAL
@@ -878,6 +880,7 @@ export default function FarmerOps() {
 
   const tabs = [
     { id: "grading", label: "Crop Grading", icon: Leaf },
+    { id: "analytics", label: "Analytics", icon: BarChart3 },
     { id: "glut", label: "Glut Alerts", icon: AlertTriangle },
     { id: "carbon", label: "Carbon Passport", icon: Shield },
     { id: "voice", label: "Voice Assistant", icon: Mic },
@@ -916,6 +919,7 @@ export default function FarmerOps() {
           transition={{ duration: 0.15 }}
         >
           {activeTab === "grading" && <CropGradingPortal />}
+          {activeTab === "analytics" && <Analytics />}
           {activeTab === "glut" && <GlutDetector />}
           {activeTab === "carbon" && <CarbonPassportModule />}
           {activeTab === "voice" && <VoiceAssistant />}

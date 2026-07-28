@@ -1,4 +1,4 @@
-import { BarterListing, CropCreditTrade, GlutAlert, CarbonPassport } from "./types";
+import { BarterListing, CropCreditTrade, GlutAlert, CarbonPassport, DailyGradeData } from "./types";
 
 export const MOCK_GLUT_ALERTS: GlutAlert[] = [
   {
@@ -201,3 +201,13 @@ export const MOCK_CARBON_PASSPORT: CarbonPassport = {
   waterSaved: 12500,
   biodiversityScore: 88,
 };
+
+export const MOCK_GRADE_HISTORY: DailyGradeData[] = [
+  { date: "2026-07-22", label: "Jul 22", avgScore: 87, avgPrice: 2.45, avgCarbonScore: 72, avgSoilScore: 68, submissions: 12, avgShelfLife: 14, topGrade: "A-" },
+  { date: "2026-07-23", label: "Jul 23", avgScore: 91, avgPrice: 2.60, avgCarbonScore: 78, avgSoilScore: 74, submissions: 18, avgShelfLife: 16, topGrade: "A" },
+  { date: "2026-07-24", label: "Jul 24", avgScore: 88, avgPrice: 2.55, avgCarbonScore: 75, avgSoilScore: 71, submissions: 15, avgShelfLife: 13, topGrade: "A-" },
+  { date: "2026-07-25", label: "Jul 25", avgScore: 94, avgPrice: 2.85, avgCarbonScore: 82, avgSoilScore: 79, submissions: 22, avgShelfLife: 18, topGrade: "A" },
+  { date: "2026-07-26", label: "Jul 26", avgScore: 90, avgPrice: 2.70, avgCarbonScore: 80, avgSoilScore: 76, submissions: 19, avgShelfLife: 15, topGrade: "A" },
+  { date: "2026-07-27", label: "Jul 27", avgScore: 93, avgPrice: 2.90, avgCarbonScore: 84, avgSoilScore: 81, submissions: 25, avgShelfLife: 17, topGrade: "A+" },
+  { date: "2026-07-28", label: "Today", avgScore: 96, avgPrice: 3.10, avgCarbonScore: 87, avgSoilScore: 85, submissions: 8, avgShelfLife: 19, topGrade: "A+" },
+];

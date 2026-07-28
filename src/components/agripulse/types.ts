@@ -133,3 +133,15 @@ export const ZONES = [
   "East-1", "East-2",
   "West-1", "West-2", "West-3",
 ];
+
+export interface DailyGradeData {
+  date: string;
+  label: string;
+  avgScore: number;
+  avgPrice: number;
+  avgCarbonScore: number;
+  avgSoilScore: number;
+  submissions: number;
+  avgShelfLife: number;
+  topGrade: string;
+}
