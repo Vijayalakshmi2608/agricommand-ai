@@ -1,3 +1,6 @@
+// AgriPulse AI — Autonomous Agtech Command Center.
+// Main command-center shell: mode toggle (Farmer Ops / Consumer Marketplace),
+// API key drawer, and animated mode transitions.
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sprout, Tractor, ShoppingCart } from "lucide-react";
