@@ -993,7 +993,7 @@ const mr: Dict = {
   "glut.origin": "उगम",
   "glut.surplusVol": "अधिशेष",
   "glut.destination": "शिफारस केलेले गंतव्य",
-  "glut.deficit": "तूट मागणी",
+  "glut.deficitDemand": "तूट मागणी",
   "glut.routeDetails": "मार्ग तपशील",
   "glut.distance": "अंतर",
   "glut.transit": "वाहतूक वेळ",
@@ -1254,7 +1254,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     let s = DICTS[lang][key] ?? DICTS.en[key] ?? key;
     if (vars) {
       for (const [k, v] of Object.entries(vars)) {
-        s = s.replaceAll(`{${k}}`, String(v));
+        s = s.split(`{${k}}`).join(String(v));
       }
     }
     return s;
