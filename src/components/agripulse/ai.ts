@@ -84,6 +84,12 @@ function getMockGrade(cropType: string, _weight: number): CropGradeResult {
     solarStoragePercent: 80 + Math.floor(Math.random() * 20),
     certifications: ["Quality Verified", "AI-Graded"],
     batchId: generateBatchId(),
+    reasoning: [
+      `Uniform color and firm texture detected — consistent with ${grade} maturity for ${cropType}.`,
+      `Estimated moisture within optimal band for transport, minimizing bruising and decay risk.`,
+      `Regional demand index for ${cropType} is elevated in this market zone, supporting a fair-price premium.`,
+      `Cold-chain storage recommendations applied from best practices to extend shelf life by ~${Math.round(shelfDays / 7)} days.`,
+    ],
   };
 }
 

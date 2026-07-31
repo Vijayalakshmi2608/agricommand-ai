@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, BarChart3, Sparkles, ArrowUpRight } from "lucide-react";
+import { TrendingUp, TrendingDown, BarChart3, Sparkles, ArrowUpRight, ArrowUpDown, Wallet, Award, Droplets } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -8,16 +8,21 @@ import {
   Area,
   BarChart,
   Bar,
+  PieChart,
+  Pie,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts";
 import { Badge } from "@/components/ui/badge";
-import { MOCK_GRADE_HISTORY } from "./data";
+import { MOCK_GRADE_HISTORY, MOCK_CROP_MIX } from "./data";
 import { DailyGradeData } from "./types";
+import { useI18n } from "./i18n";
+
+const PIE_COLORS = ["#10B981", "#F59E0B", "#3B82F6", "#A855F7", "#EF4444", "#6B7280"];
 
 // ===== CUSTOM TOOLTIP =====
 function CustomTooltip({ active, payload, label }: any) {
@@ -63,6 +68,28 @@ function StatChip({ label, value, trend, color = "emerald" }: {
 export default function Analytics() {
   const data: DailyGradeData[] = MOCK_GRADE_HISTORY;
   const [chartView, setChartView] = useState<"line" | "area" | "bar">("line");
+  const [sortKey, setSortKey] = useState<keyof DailyGradeData | null>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+
+  const sortedData = useMemo(() => {
+    if (!sortKey) return data;
+    const arr = [...data];
+    arr.sort((a, b) => {
+      const va = a[sortKey];
+      const vb = b[sortKey];
+      if (typeof va === "number" && typeof vb === "number") return sortDir === "asc" ? va - vb : vb - va;
+      return sortDir === "asc" ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
+    });
+    return arr;
+  }, [data, sortKey, sortDir]);
+
+  const toggleSort = (key: keyof DailyGradeData) => {
+    if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else {
+      setSortKey(key);
+      setSortDir("desc");
+    }
+  };
 
   // Calculate trends
   const firstDay = data[0];
@@ -84,6 +111,42 @@ export default function Analytics() {
         <div>
           <h2 className="text-base font-semibold text-white">7-Day Grade Trends & Analytics</h2>
           <p className="text-[11px] text-gray-400">Real-time quality metrics and market intelligence</p>
+        </div>
+      </div>
+
+      {/* KPI Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="rounded-xl border border-emerald-500/10 bg-[rgba(22,28,46,0.4)] p-3.5">
+          <div className="flex items-center gap-2 mb-1">
+            <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+            <p className="text-[9px] text-gray-400 uppercase tracking-wider">Avg Quality Score</p>
+          </div>
+          <p className="text-lg font-bold text-white">91.4%</p>
+          <p className="text-[9px] text-emerald-300">↑ 2.3% this week</p>
+        </div>
+        <div className="rounded-xl border border-emerald-500/10 bg-[rgba(22,28,46,0.4)] p-3.5">
+          <div className="flex items-center gap-2 mb-1">
+            <Wallet className="h-3.5 w-3.5 text-amber-400" />
+            <p className="text-[9px] text-gray-400 uppercase tracking-wider">Revenue (month)</p>
+          </div>
+          <p className="text-lg font-bold text-white">₹ 2,84,000</p>
+          <p className="text-[9px] text-emerald-300">↑ 18%</p>
+        </div>
+        <div className="rounded-xl border border-emerald-500/10 bg-[rgba(22,28,46,0.4)] p-3.5">
+          <div className="flex items-center gap-2 mb-1">
+            <Award className="h-3.5 w-3.5 text-blue-400" />
+            <p className="text-[9px] text-gray-400 uppercase tracking-wider">Batches graded</p>
+          </div>
+          <p className="text-lg font-bold text-white">23</p>
+          <p className="text-[9px] text-emerald-300">↑ 5 vs last week</p>
+        </div>
+        <div className="rounded-xl border border-emerald-500/10 bg-[rgba(22,28,46,0.4)] p-3.5">
+          <div className="flex items-center gap-2 mb-1">
+            <Droplets className="h-3.5 w-3.5 text-emerald-400" />
+            <p className="text-[9px] text-gray-400 uppercase tracking-wider">Carbon credits</p>
+          </div>
+          <p className="text-lg font-bold text-emerald-300">142</p>
+          <p className="text-[9px] text-gray-500">new feature</p>
         </div>
       </div>
 
@@ -362,6 +425,39 @@ export default function Analytics() {
         </div>
       </div>
 
+      {/* Crop Mix Pie */}
+      <div className="rounded-xl border border-emerald-500/10 bg-[rgba(22,28,46,0.4)] p-5">
+        <div className="mb-4">
+          <p className="text-xs font-semibold text-white">Crop Mix — This Month</p>
+          <p className="text-[9px] text-gray-500">Distribution of crops graded by type</p>
+        </div>
+        <div className="flex flex-col sm:flex-row items-center gap-6">
+          <div className="h-52 w-52 flex-shrink-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={MOCK_CROP_MIX} dataKey="value" nameKey="name" innerRadius={55} outerRadius={85} paddingAngle={3} strokeWidth={0}>
+                  {MOCK_CROP_MIX.map((_, i) => (
+                    <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="flex-1 w-full space-y-2">
+            {MOCK_CROP_MIX.map((slice, i) => (
+              <div key={slice.name} className="flex items-center justify-between text-[11px]">
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-sm" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />
+                  <span className="text-gray-300">{slice.name}</span>
+                </div>
+                <span className="font-semibold text-white">{slice.value}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Daily Breakdown Table */}
       <div className="rounded-xl border border-emerald-500/10 bg-[rgba(22,28,46,0.4)] p-5">
         <p className="text-xs font-semibold text-white mb-4">Daily Grade Breakdown</p>
@@ -369,16 +465,29 @@ export default function Analytics() {
           <table className="w-full text-[11px]">
             <thead>
               <tr className="border-b border-emerald-500/10">
-                <th className="text-left text-[9px] text-gray-400 uppercase tracking-wider pb-2 pr-4">Date</th>
-                <th className="text-left text-[9px] text-gray-400 uppercase tracking-wider pb-2 pr-4">Avg Score</th>
-                <th className="text-left text-[9px] text-gray-400 uppercase tracking-wider pb-2 pr-4">Top Grade</th>
-                <th className="text-left text-[9px] text-gray-400 uppercase tracking-wider pb-2 pr-4">Price</th>
-                <th className="text-left text-[9px] text-gray-400 uppercase tracking-wider pb-2 pr-4">Shelf Life</th>
-                <th className="text-right text-[9px] text-gray-400 uppercase tracking-wider pb-2">Submissions</th>
+                {([
+                  { key: "label", label: "Date", align: "left" },
+                  { key: "avgScore", label: "Avg Score", align: "left" },
+                  { key: "topGrade", label: "Top Grade", align: "left" },
+                  { key: "avgPrice", label: "Price", align: "left" },
+                  { key: "avgShelfLife", label: "Shelf Life", align: "left" },
+                  { key: "submissions", label: "Submissions", align: "right" },
+                ] as { key: keyof DailyGradeData; label: string; align: "left" | "right" }[]).map((col) => (
+                  <th
+                    key={col.key}
+                    onClick={() => toggleSort(col.key)}
+                    className={`${col.align === "right" ? "text-right" : "text-left"} text-[9px] text-gray-400 uppercase tracking-wider pb-2 pr-4 cursor-pointer hover:text-emerald-300 select-none transition-colors`}
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      {col.label}
+                      <ArrowUpDown className={`h-2.5 w-2.5 ${sortKey === col.key ? "text-emerald-400" : "text-gray-600"}`} />
+                    </span>
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {data.map((row, i) => (
+              {sortedData.map((row, i) => (
                 <tr
                   key={row.date}
                   className={`border-b border-emerald-500/5 hover:bg-emerald-500/5 transition-colors ${

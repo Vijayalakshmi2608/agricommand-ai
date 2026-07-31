@@ -207,3 +207,74 @@
     linear-gradient(90deg, rgba(16, 185, 129, 0.03) 1px, transparent 1px);
   background-size: 40px 40px;
 }
+
+/* Dot-grid background (spec) */
+.bg-dot-grid {
+  background-image: radial-gradient(rgba(16, 185, 129, 0.13) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* Spec-compliant glassmorphism card */
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+}
+
+/* Shimmer skeleton */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton-shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.04) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: 8px;
+}
+
+/* Mode accent — emerald for farmer, amber for consumer */
+:root {
+  --mode-accent: #10B981;
+  --mode-accent-soft: rgba(16, 185, 129, 0.12);
+  --mode-accent-dim: rgba(16, 185, 129, 0.35);
+}
+.consumer-mode {
+  --mode-accent: #F59E0B;
+  --mode-accent-soft: rgba(245, 158, 11, 0.12);
+  --mode-accent-dim: rgba(245, 158, 11, 0.35);
+}
+.accent-text { color: var(--mode-accent); }
+.accent-border { border-color: var(--mode-accent-dim); }
+.accent-bg { background: var(--mode-accent-soft); }
+.accent-glow { box-shadow: 0 0 28px var(--mode-accent-soft); }
+
+/* India map pulsing alert dots */
+@keyframes map-pulse {
+  0% { r: 6px; opacity: 0.9; }
+  70% { r: 24px; opacity: 0; }
+  100% { r: 24px; opacity: 0; }
+}
+.map-pulse-dot {
+  animation: map-pulse 1.6s ease-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* Print — only the certificate is visible */
+@media print {
+  body * { visibility: hidden !important; }
+  .print-certificate, .print-certificate * { visibility: visible !important; }
+  .print-certificate {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100%;
+    background: #ffffff !important;
+    color: #111111 !important;
+  }
+}
+
+/* Mobile bottom-nav safe area */
+.pb-safe { padding-bottom: max(env(safe-area-inset-bottom), 0px); }

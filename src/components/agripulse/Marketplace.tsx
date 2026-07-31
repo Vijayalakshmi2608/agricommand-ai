@@ -1,421 +1,383 @@
-import { useState } from "react";
+import { useState, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
-  ShoppingCart,
-  Warehouse,
-  Users,
-  ArrowLeftRight,
-  Handshake,
-  Shield,
-  CheckCircle2,
-  Clock,
-  Loader2,
-  Tractor,
-  Sprout,
-  Search,
-  Star,
-  MapPin,
-  Hash,
-  FileText,
+  ShoppingCart, Search, MapPin, Leaf, ShieldCheck, Filter, Share2,
+  TrendingUp, TrendingDown, Users, Sprout, Heart, ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MOCK_BARTER_LISTINGS, MOCK_CROP_TRADES } from "./data";
-import { BarterListing, CropCreditTrade } from "./types";
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+} from "recharts";
+import { MOCK_PRODUCTS, MOCK_CONSUMER_IMPACT } from "./data";
+import { MarketProduct } from "./types";
+import { useI18n } from "./i18n";
+import { useDebounce, SimulatedBadge, LiveBadge, CountUp, EmptyState } from "./ui-kit";
+import ConsumerPassportModal from "./ConsumerPassport";
 
-// ============================================================
-// BARTER MARKETPLACE
-// ============================================================
-function BarterMarketplace() {
-  const [listings] = useState<BarterListing[]>(MOCK_BARTER_LISTINGS);
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<string>("all");
-  const [selectedListing, setSelectedListing] = useState<string | null>(null);
-  const [tradeModal, setTradeModal] = useState<BarterListing | null>(null);
+export type ConsumerTab = "market" | "impact";
 
-  const filtered = listings.filter((l) => {
-    if (filter !== "all" && l.type !== filter) return false;
-    if (search && !l.title.toLowerCase().includes(search.toLowerCase()) &&
-        !l.farmerName.toLowerCase().includes(search.toLowerCase())) return false;
-    return true;
-  });
-
-  const handleOfferTrade = (listing: BarterListing) => {
-    toast.success("Trade offer sent!", {
-      description: `Offering ${listing.creditValue} ${listing.creditUnit} for "${listing.title}"`,
-    });
-    setTradeModal(null);
-  };
-
+function TooltipBody({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null;
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/15">
-          <Handshake className="h-4.5 w-4.5 text-amber-400" />
-        </div>
-        <div>
-          <h2 className="text-base font-semibold text-white">Farmer Barter & Tool-Share Network</h2>
-          <p className="text-[11px] text-gray-400">Trade equipment, labor, and supplies using crop credits</p>
-        </div>
-      </div>
-
-      {/* Search & Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-500" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search listings..."
-            className="w-full rounded-xl border border-emerald-500/12 bg-[rgba(12,15,25,0.8)] pl-9 pr-4 py-2.5 text-xs text-white placeholder:text-gray-600 focus:border-emerald-400/40 focus:outline-none focus:ring-1 focus:ring-emerald-500/30"
-          />
-        </div>
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="rounded-xl border border-emerald-500/12 bg-[rgba(12,15,25,0.8)] px-3 py-2.5 text-xs text-white focus:border-emerald-400/40 focus:outline-none focus:ring-1 focus:ring-emerald-500/30"
-        >
-          <option value="all" className="bg-[#0f1117]">All Types</option>
-          <option value="equipment" className="bg-[#0f1117]">Equipment</option>
-          <option value="labor" className="bg-[#0f1117]">Labor</option>
-          <option value="compost" className="bg-[#0f1117]">Compost</option>
-          <option value="seeds" className="bg-[#0f1117]">Seeds</option>
-        </select>
-      </div>
-
-      {/* Listings Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((listing) => (
-          <motion.div
-            key={listing.id}
-            layout
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`rounded-xl border p-4 transition-all cursor-pointer ${
-              selectedListing === listing.id
-                ? "border-emerald-400/30 bg-emerald-500/8 shadow-lg shadow-emerald-500/5"
-                : "border-emerald-500/10 bg-[rgba(22,28,46,0.4)] hover:border-emerald-500/25 hover:bg-[rgba(22,28,46,0.6)]"
-            }`}
-            onClick={() => setSelectedListing(selectedListing === listing.id ? null : listing.id)}
-          >
-            <div className="flex items-start gap-3 mb-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-lg">
-                {listing.type === "equipment" ? "🔧" : listing.type === "labor" ? "👥" : listing.type === "compost" ? "🌱" : "🌾"}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-white truncate">{listing.title}</p>
-                <p className="text-[10px] text-gray-400 truncate">{listing.farmerName}</p>
-              </div>
-              <Badge className={`text-[9px] ${
-                listing.available
-                  ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/20"
-                  : "bg-gray-500/10 text-gray-400 border-gray-500/20"
-              }`}>
-                {listing.available ? "Available" : "Rented"}
-              </Badge>
-            </div>
-
-            <p className="text-[10px] text-gray-400 leading-relaxed mb-3 line-clamp-2">
-              {listing.description}
-            </p>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <Star className="h-3 w-3 text-amber-400" />
-                <span className="text-[10px] text-gray-400">{listing.rating}</span>
-                <span className="text-[9px] text-gray-600">({listing.tradesCompleted} trades)</span>
-              </div>
-              <div className="text-right">
-                <p className="text-[11px] font-semibold text-emerald-300">
-                  {listing.creditValue} credits
-                </p>
-                <p className="text-[8px] text-gray-500">per {listing.creditUnit.slice(0, 15)}...</p>
-              </div>
-            </div>
-
-            {selectedListing === listing.id && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                className="mt-3 pt-3 border-t border-emerald-500/10"
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <MapPin className="h-3 w-3 text-gray-500" />
-                  <span className="text-[10px] text-gray-400">{listing.location}</span>
-                </div>
-                <Button
-                  size="sm"
-                  disabled={!listing.available}
-                  onClick={(e) => { e.stopPropagation(); setTradeModal(listing); }}
-                  className="w-full rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-white text-[10px] py-3 hover:from-amber-400 hover:to-amber-500 disabled:opacity-40"
-                >
-                  <ArrowLeftRight className="h-3 w-3" />
-                  Offer Trade (Crop Credits)
-                </Button>
-              </motion.div>
-            )}
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Trade Modal */}
-      <AnimatePresence>
-        {tradeModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setTradeModal(null)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-sm rounded-2xl border border-emerald-500/15 bg-[rgba(18,22,36,0.98)] shadow-2xl p-6"
-            >
-              <div className="text-center mb-5">
-                <div className="text-3xl mb-2">🤝</div>
-                <h3 className="text-sm font-semibold text-white">Crop-Credit Trade Offer</h3>
-                <p className="text-[10px] text-gray-400 mt-1">{tradeModal.title}</p>
-              </div>
-
-              <div className="rounded-xl bg-emerald-500/5 border border-emerald-500/10 p-4 mb-4">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-[10px] text-gray-400">You offer:</span>
-                  <span className="text-xs font-semibold text-emerald-300">
-                    {tradeModal.creditValue} Crop Credits
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[10px] text-gray-400">You receive:</span>
-                  <span className="text-xs font-semibold text-white">
-                    {tradeModal.title} (2 days)
-                  </span>
-                </div>
-                <div className="mt-3 pt-3 border-t border-emerald-500/10">
-                  <div className="flex justify-between text-[10px] text-gray-500">
-                    <span>Exchange rate:</span>
-                    <span className="text-amber-300">
-                      1 credit ≈ {Math.round(tradeModal.creditUnit.includes("kg") ? parseFloat(tradeModal.creditUnit) : 1)} kg crops
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  onClick={() => setTradeModal(null)}
-                  className="flex-1 rounded-xl border border-emerald-500/10 text-xs text-gray-400 hover:bg-emerald-500/5"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => handleOfferTrade(tradeModal)}
-                  className="flex-1 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-xs py-4"
-                >
-                  <Handshake className="h-3.5 w-3.5" />
-                  Confirm Trade
-                </Button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+    <div className="rounded-xl border border-amber-500/15 bg-[rgba(18,22,36,0.95)] backdrop-blur-xl p-3 text-[11px]">
+      <p className="text-gray-400 mb-1">{label}</p>
+      {payload.map((p: any, i: number) => (
+        <p key={i} className="text-gray-200">
+          <span style={{ color: p.color }}>{p.name}: </span>
+          <span className="font-semibold text-white">{p.value}{p.name.includes("kg") ? "" : p.name === "Carbon" ? " kg CO₂e" : p.name === "Miles" ? " mi" : p.name === "Farmers" ? "" : "%"}</span>
+        </p>
+      ))}
     </div>
   );
 }
 
-// ============================================================
-// CROP-CREDIT LEDGER
-// ============================================================
-function CropCreditLedger() {
-  const [trades] = useState<CropCreditTrade[]>(MOCK_CROP_TRADES);
-
-  const statusIcon = (status: string) => {
-    switch (status) {
-      case "locked": return <LockIcon />;
-      case "in-transit": return <TruckIcon />;
-      case "released": return <CheckCircle2 className="h-4 w-4 text-emerald-400" />;
-      default: return <Clock className="h-4 w-4 text-gray-500" />;
-    }
-  };
-
-  const statusBadge = (status: string) => {
-    const styles: Record<string, string> = {
-      locked: "bg-blue-500/10 text-blue-300 border-blue-500/20",
-      "in-transit": "bg-amber-500/10 text-amber-300 border-amber-500/20",
-      released: "bg-emerald-500/10 text-emerald-300 border-emerald-500/20",
-    };
-    const labels: Record<string, string> = {
-      locked: "🔒 Locked",
-      "in-transit": "🚚 In-Transit",
-      released: "✅ Released",
-    };
-    return (
-      <Badge className={`${styles[status] || ""} text-[9px]`}>
-        {labels[status] || status}
-      </Badge>
-    );
-  };
-
+export default function Marketplace({
+  tab,
+  onTabChange,
+}: {
+  tab: ConsumerTab;
+  onTabChange: (t: ConsumerTab) => void;
+}) {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/15">
-          <FileText className="h-4.5 w-4.5 text-blue-400" />
-        </div>
-        <div>
-          <h2 className="text-base font-semibold text-white">Smart-Contract Escrow & Crop-Credit Ledger</h2>
-          <p className="text-[11px] text-gray-400">Transparent P2P barter trade settlement on simulated blockchain</p>
-        </div>
-      </div>
-
-      {/* Stats Summary */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-xl border border-emerald-500/10 bg-[rgba(22,28,46,0.4)] p-3.5 text-center">
-          <p className="text-lg font-bold text-white">{trades.length}</p>
-          <p className="text-[9px] text-gray-400">Total Trades</p>
-        </div>
-        <div className="rounded-xl border border-emerald-500/10 bg-[rgba(22,28,46,0.4)] p-3.5 text-center">
-          <p className="text-lg font-bold text-emerald-300">
-            {trades.filter(t => t.status === "released").length}
-          </p>
-          <p className="text-[9px] text-gray-400">Completed</p>
-        </div>
-        <div className="rounded-xl border border-emerald-500/10 bg-[rgba(22,28,46,0.4)] p-3.5 text-center">
-          <p className="text-lg font-bold text-amber-300">
-            {trades.reduce((s, t) => s + t.trustScore, 0) / trades.length}%
-          </p>
-          <p className="text-[9px] text-gray-400">Avg Trust</p>
-        </div>
-      </div>
-
-      {/* Trades Table */}
-      <div className="space-y-3">
-        {trades.map((trade) => (
-          <motion.div
-            key={trade.id}
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="rounded-xl border border-emerald-500/10 bg-[rgba(22,28,46,0.4)] p-4"
-          >
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/10">
-                  <Hash className="h-4 w-4 text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-white">
-                    {trade.fromFarmer} → {trade.toFarmer}
-                  </p>
-                  <p className="text-[9px] text-gray-500 font-mono mt-0.5">
-                    TX: {trade.txHash}
-                  </p>
-                </div>
-              </div>
-              {statusBadge(trade.status)}
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 mb-3">
-              <div className="rounded-lg bg-emerald-500/5 p-2.5">
-                <p className="text-[9px] text-gray-400 uppercase">Offering</p>
-                <p className="text-xs text-white mt-0.5">{trade.offering}</p>
-              </div>
-              <div className="rounded-lg bg-amber-500/5 p-2.5">
-                <p className="text-[9px] text-gray-400 uppercase">Requesting</p>
-                <p className="text-xs text-white mt-0.5">{trade.requesting}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Shield className="h-3 w-3 text-emerald-400" />
-                <span className="text-[10px] text-gray-400">Trust Score: </span>
-                <span className="text-[10px] font-semibold text-emerald-300">{trade.trustScore}%</span>
-              </div>
-              <span className="text-[9px] text-gray-500">
-                {new Date(trade.timestamp).toLocaleDateString("en-IN", {
-                  day: "numeric", month: "short", year: "numeric",
-                })}
-              </span>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function LockIcon() {
-  return (
-    <svg className="h-4 w-4 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-      <path d="M7 11V7a5 5 0 0110 0v4" />
-    </svg>
-  );
-}
-
-function TruckIcon() {
-  return (
-    <svg className="h-4 w-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M1 3h15v13H1z" />
-      <path d="M16 8h4l3 3v5h-7V8z" />
-      <circle cx="5.5" cy="18.5" r="2.5" />
-      <circle cx="18.5" cy="18.5" r="2.5" />
-    </svg>
-  );
-}
-
-// ============================================================
-// EXPORT: MAIN MARKETPLACE CONTAINER
-// ============================================================
-export default function Marketplace() {
-  const [activeTab, setActiveTab] = useState("barter");
-
-  const tabs = [
-    { id: "barter", label: "Barter Network", icon: Handshake },
-    { id: "ledger", label: "Crop-Credit Ledger", icon: FileText },
-  ];
-
-  return (
-    <div className="space-y-6 pb-8">
-      <div className="flex gap-1 rounded-xl bg-[rgba(22,28,46,0.5)] border border-emerald-500/10 p-1">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
+    <div className="space-y-6 pb-8 md:pb-2">
+      <div className="hidden md:flex gap-1 rounded-xl bg-[rgba(22,28,46,0.5)] border border-amber-500/10 p-1 w-fit">
+        {([
+          { id: "market", label: "ctabs.market", icon: ShoppingCart },
+          { id: "impact", label: "ctabs.impact", icon: Heart },
+        ] as const).map((tb) => {
+          const Icon = tb.icon;
           return (
             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              key={tb.id}
+              onClick={() => onTabChange(tb.id)}
               className={`flex items-center gap-2 rounded-lg px-4 py-2 text-[11px] font-medium transition-all ${
-                activeTab === tab.id
-                  ? "bg-emerald-500/15 text-emerald-300 shadow-sm"
-                  : "text-gray-400 hover:text-gray-300 hover:bg-emerald-500/5"
+                tab === tb.id ? "bg-amber-500/15 text-amber-300 shadow-sm" : "text-gray-400 hover:text-gray-300 hover:bg-amber-500/5"
               }`}
             >
               <Icon className="h-3.5 w-3.5" />
-              {tab.label}
+              {tb.label}
             </button>
           );
         })}
       </div>
 
       <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 5 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -5 }}
-          transition={{ duration: 0.15 }}
-        >
-          {activeTab === "barter" && <BarterMarketplace />}
-          {activeTab === "ledger" && <CropCreditLedger />}
+        <motion.div key={tab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.15 }}>
+          {tab === "market" ? <MarketHome /> : <ImpactDashboard />}
         </motion.div>
       </AnimatePresence>
+    </div>
+  );
+}
+
+// ===== MARKET HOME =====
+function MarketHome() {
+  const { t } = useI18n();
+  const [search, setSearch] = useState("");
+  const [location, setLocation] = useState("");
+  const [filters, setFilters] = useState<Record<string, boolean>>({
+    organic: false,
+    carbon: false,
+    within50: false,
+    available: false,
+  });
+  const [selected, setSelected] = useState<MarketProduct | null>(null);
+  const debounced = useDebounce(search, 300);
+
+  const filtered = useMemo(() => {
+    return MOCK_PRODUCTS.filter((p) => {
+      if (debounced && !p.name.toLowerCase().includes(debounced.toLowerCase()) && !p.farm.toLowerCase().includes(debounced.toLowerCase())) return false;
+      if (filters.organic && !p.organic) return false;
+      if (filters.carbon && !p.carbonCertified) return false;
+      if (filters.within50 && p.distanceKm > 50) return false;
+      if (filters.available && p.shelfLifeDays < 5) return false;
+      return true;
+    });
+  }, [debounced, filters]);
+
+  const toggleFilter = (k: string) => setFilters((f) => ({ ...f, [k]: !f[k] }));
+
+  const filterChips = [
+    { key: "organic", label: t("market.organicOnly") },
+    { key: "carbon", label: t("market.carbonCertified") },
+    { key: "within50", label: t("market.within50") },
+    { key: "available", label: t("market.availableNow") },
+  ];
+
+  return (
+    <div className="space-y-5">
+      {/* Hero search */}
+      <div className="rounded-2xl border border-amber-500/15 bg-gradient-to-br from-amber-500/8 to-amber-600/3 p-5">
+        <h2 className="text-lg font-bold text-white">{t("market.heroPlaceholder")}</h2>
+        <div className="mt-3 flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t("market.heroPlaceholder")}
+              className="w-full rounded-xl border border-amber-500/15 bg-[rgba(12,15,25,0.8)] pl-10 pr-4 py-3 text-sm text-white placeholder:text-gray-600 focus:border-amber-400/40 focus:outline-none"
+            />
+          </div>
+          <div className="relative sm:w-56">
+            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <input
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder={t("market.location")}
+              className="w-full rounded-xl border border-amber-500/15 bg-[rgba(12,15,25,0.8)] pl-10 pr-4 py-3 text-sm text-white placeholder:text-gray-600 focus:border-amber-400/40 focus:outline-none"
+            />
+          </div>
+        </div>
+
+        {/* Filter chips */}
+        <div className="mt-3 flex flex-wrap gap-2">
+          {filterChips.map((c) => (
+            <button
+              key={c.key}
+              onClick={() => toggleFilter(c.key)}
+              className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-medium transition-all ${
+                filters[c.key]
+                  ? "border-amber-400/50 bg-amber-500/15 text-amber-300"
+                  : "border-amber-500/15 text-gray-400 hover:text-gray-300"
+              }`}
+            >
+              <Filter className="h-2.5 w-2.5" /> {c.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Product grid */}
+      {filtered.length === 0 ? (
+        <EmptyState
+          icon={<ShoppingCart className="h-12 w-12" />}
+          title="No products match your filters"
+          sub="Try widening the search or clearing filters to see all verified produce."
+        />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((p) => (
+            <motion.div
+              key={p.id}
+              layout
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass-card overflow-hidden hover:border-amber-400/25 transition-all duration-300 group"
+            >
+              {/* Product image (emoji hero) */}
+              <div className="relative flex h-32 items-center justify-center bg-gradient-to-br from-[rgba(245,158,11,0.12)] to-[rgba(16,185,129,0.06)]">
+                <span className="text-6xl drop-shadow-lg group-hover:scale-110 transition-transform">{p.emoji}</span>
+                <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5">
+                  {p.carbonCertified && (
+                    <Badge className="bg-emerald-500/15 text-emerald-300 border-emerald-500/25 text-[9px]">
+                      <ShieldCheck className="h-3 w-3 mr-1" /> {p.carbonScore}/100 {t("market.carbonScore")}
+                    </Badge>
+                  )}
+                  {p.organic && (
+                    <Badge className="bg-amber-500/15 text-amber-300 border-amber-500/25 text-[9px]">
+                      <Leaf className="h-3 w-3 mr-1" /> Organic
+                    </Badge>
+                  )}
+                </div>
+                <div className="absolute top-2.5 right-2.5">
+                  <Badge className="bg-white/10 text-white border-white/15 text-[9px]">{t("market.grade")} {p.grade}</Badge>
+                </div>
+              </div>
+
+              <div className="p-4">
+                <h3 className="text-sm font-semibold text-white">{p.name}</h3>
+                <p className="text-[10px] text-gray-400 mt-0.5 flex items-center gap-1">
+                  <MapPin className="h-2.5 w-2.5" /> {p.farm} • {p.distanceKm} km
+                </p>
+
+                <div className="mt-3 flex items-end justify-between">
+                  <div>
+                    <p className="text-lg font-bold text-white">₹ {p.pricePerKg}<span className="text-[10px] text-gray-500">/kg</span></p>
+                    <p className="text-[9px] text-emerald-400/80">{t("market.fairTrade")} ✓</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] text-gray-300">{p.shelfLifeDays} {t("market.shelfLife")}</p>
+                    <p className="text-[9px] text-gray-600">{p.carbonCertified ? <LiveBadge /> : <SimulatedBadge />}</p>
+                  </div>
+                </div>
+
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => toast.success(t("market.addedToast"), { description: `${p.name} • ₹${p.pricePerKg}/kg` })}
+                    className="rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-white text-[10px] py-2.5 hover:from-amber-400 hover:to-amber-500 gap-1"
+                  >
+                    <ShoppingCart className="h-3 w-3" /> {t("market.addToCart")}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setSelected(p)}
+                    className="rounded-lg border border-emerald-500/20 text-emerald-300 hover:bg-emerald-500/10 text-[10px] py-2.5 gap-1"
+                  >
+                    <ShieldCheck className="h-3 w-3" /> {t("market.viewPassport")}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      <AnimatePresence>
+        {selected && (
+          <ConsumerPassportModal
+            data={{
+              passportId: selected.passportId,
+              crop: selected.name,
+              emoji: selected.emoji,
+              farmer: selected.farmer,
+              farm: selected.farm,
+              location: selected.location,
+              distanceKm: selected.distanceKm,
+              foodMiles: selected.foodMiles,
+              sustainabilityScore: selected.carbonScore,
+            }}
+            onClose={() => setSelected(null)}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ===== IMPACT DASHBOARD =====
+function ImpactDashboard() {
+  const { t } = useI18n();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const last = MOCK_CONSUMER_IMPACT[MOCK_CONSUMER_IMPACT.length - 1];
+
+  const share = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.fillStyle = "#0F1117";
+    ctx.fillRect(0, 0, 640, 360);
+    ctx.fillStyle = "#10B981";
+    ctx.beginPath();
+    ctx.arc(560, 60, 130, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 34px Inter, sans-serif";
+    ctx.fillText("My AgriPulse Impact", 40, 70);
+    ctx.font = "18px Inter, sans-serif";
+    ctx.fillStyle = "#6B7280";
+    ctx.fillText(`July 2026 • ${last.farmersSupported} farms supported`, 40, 105);
+    ctx.fillStyle = "#F9FAFB";
+    ctx.font = "bold 22px Inter, sans-serif";
+    ctx.fillText(`Carbon saved: ${last.carbonSaved} kg CO₂e`, 40, 170);
+    ctx.fillText(`Food miles saved: ${last.foodMiles.toLocaleString()} mi`, 40, 210);
+    ctx.fillText(`Organic produce: ${last.organicPct}%`, 40, 250);
+    ctx.fillText(`Farmers supported: ${last.farmersSupported}`, 40, 290);
+    const dataUrl = canvas.toDataURL("image/png");
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = "agripulse-impact.png";
+    a.click();
+    toast.success(t("market.shared"));
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-base font-semibold text-white">Your Impact Dashboard</h2>
+          <p className="text-[11px] text-gray-400">Verified purchases only — last 3 months</p>
+        </div>
+        <Button onClick={share} className="rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs gap-2">
+          <Share2 className="h-3.5 w-3.5" /> {t("market.shareImpact")}
+        </Button>
+      </div>
+
+      {/* KPIs */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="glass-card p-4">
+          <div className="flex items-center gap-2 mb-1.5">
+            <Leaf className="h-4 w-4 text-emerald-400" />
+            <p className="text-[9px] text-gray-400 uppercase">{t("market.carbonSaved")}</p>
+          </div>
+          <p className="text-xl font-bold text-white"><CountUp value={last.carbonSaved} suffix=" kg" /></p>
+          <p className="text-[9px] text-emerald-300">CO₂e vs supermarket</p>
+        </div>
+        <div className="glass-card p-4">
+          <div className="flex items-center gap-2 mb-1.5">
+            <TrendingUp className="h-4 w-4 text-amber-400" />
+            <p className="text-[9px] text-gray-400 uppercase">{t("market.foodMilesSaved")}</p>
+          </div>
+          <p className="text-xl font-bold text-white"><CountUp value={last.foodMiles} suffix=" mi" /></p>
+          <p className="text-[9px] text-emerald-300">↑ 24% vs May</p>
+        </div>
+        <div className="glass-card p-4">
+          <div className="flex items-center gap-2 mb-1.5">
+            <Users className="h-4 w-4 text-blue-400" />
+            <p className="text-[9px] text-gray-400 uppercase">{t("market.farmersSupported")}</p>
+          </div>
+          <p className="text-xl font-bold text-white"><CountUp value={last.farmersSupported} /></p>
+          <p className="text-[9px] text-emerald-300">unique farms</p>
+        </div>
+        <div className="glass-card p-4">
+          <div className="flex items-center gap-2 mb-1.5">
+            <Sprout className="h-4 w-4 text-emerald-400" />
+            <p className="text-[9px] text-gray-400 uppercase">{t("market.organicPct")}</p>
+          </div>
+          <p className="text-xl font-bold text-white"><CountUp value={last.organicPct} suffix="%" /></p>
+          <p className="text-[9px] text-emerald-300">of purchases organic</p>
+        </div>
+      </div>
+
+      {/* Chart */}
+      <div className="glass-card p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-xs font-semibold text-white">Impact Trends — 3 Months</p>
+            <p className="text-[9px] text-gray-500">Carbon saved (kg CO₂e) • food miles (mi)</p>
+          </div>
+          <LiveBadge />
+        </div>
+        <div className="h-56">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={MOCK_CONSUMER_IMPACT} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+              <defs>
+                <linearGradient id="cGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="mGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="month" tick={{ fill: "#6b7280", fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: "#6b7280", fontSize: 10 }} axisLine={false} tickLine={false} />
+              <Tooltip content={<TooltipBody />} />
+              <Area type="monotone" dataKey="carbonSaved" name="Carbon" stroke="#10B981" strokeWidth={2.5} fill="url(#cGrad)" dot={{ r: 4, fill: "#10B981" }} />
+              <Area type="monotone" dataKey="foodMiles" name="Miles" stroke="#F59E0B" strokeWidth={2.5} fill="url(#mGrad)" dot={{ r: 4, fill: "#F59E0B" }} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Hidden share canvas */}
+      <canvas ref={canvasRef} width={640} height={360} className="hidden" />
+
+      {/* Motivation card */}
+      <div className="rounded-2xl border border-emerald-500/15 bg-gradient-to-br from-emerald-500/8 to-emerald-600/3 p-5 text-center">
+        <p className="text-sm text-gray-300">
+          Your purchases this month <span className="text-emerald-300 font-semibold">offset {Math.round(last.carbonSaved * 0.62)} kg of CO₂</span> — equivalent to planting <span className="text-emerald-300 font-semibold">{(last.carbonSaved * 0.62 * 0.05).toFixed(1)} trees</span>. 🌳
+        </p>
+        <p className="text-[10px] text-gray-500 mt-2">Every order directly supports a smallholder farm family.</p>
+      </div>
     </div>
   );
 }

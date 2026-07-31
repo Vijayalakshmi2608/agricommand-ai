@@ -12,7 +12,18 @@ import "./index.css";
 const Landing = lazy(() => import("./pages/Landing.tsx"));
 const AuthPage = lazy(() => import("./pages/Auth.tsx"));
 const Dashboard = lazy(() => import("./pages/Dashboard.tsx"));
+const ImpactPage = lazy(() => import("./pages/ImpactPage.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+
+// PWA: register the service worker only in production builds so the dev
+// server (and its hot module graph) is never cached during development.
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {
+      /* SW registration is best-effort */
+    });
+  });
+}
 
 // Simple loading fallback for route transitions
 function RouteLoading() {
@@ -126,6 +137,10 @@ createRoot(document.getElementById("root")!).render(
               <Route
                 path="/dashboard"
                 element={<Dashboard />}
+              />
+              <Route
+                path="/impact"
+                element={<ImpactPage />}
               />
               <Route path="*" element={<NotFound />} />
             </Routes>

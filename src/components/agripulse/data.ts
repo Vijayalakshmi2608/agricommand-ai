@@ -1,5 +1,24 @@
-import { BarterListing, CropCreditTrade, GlutAlert, CarbonPassport, DailyGradeData } from "./types";
+import {
+  BarterListing,
+  CropCreditTrade,
+  GlutAlert,
+  CarbonPassport,
+  DailyGradeData,
+  StateGlut,
+  ReroutePlan,
+  EscrowTrade,
+  MarketProduct,
+  ConsumerImpactPoint,
+  SDGTarget,
+  WeatherData,
+  ExchangeRate,
+  CropMixSlice,
+  PilotStat,
+  BeforeAfterRow,
+  Testimonial,
+} from "./types";
 
+// ============ GLUT (compat with ai.ts) ============
 export const MOCK_GLUT_ALERTS: GlutAlert[] = [
   {
     id: "glut-1",
@@ -55,11 +74,85 @@ export const MOCK_GLUT_ALERTS: GlutAlert[] = [
   },
 ];
 
+// ============ INDIA MAP STATE GLUT LEVELS ============
+export const MOCK_STATE_GLUT: StateGlut[] = [
+  { state: "Maharashtra", level: "critical", crop: "Tomato", surplusPct: 340, priceNow: "₹ 24/kg", priceWas: "₹ 32/kg", timeLeftHrs: 72 },
+  { state: "Punjab", level: "high", crop: "Basmati Rice", surplusPct: 28, priceNow: "₹ 58/kg", priceWas: "₹ 66/kg", timeLeftHrs: 120 },
+  { state: "Uttar Pradesh", level: "high", crop: "Wheat", surplusPct: 22, priceNow: "₹ 24/kg", priceWas: "₹ 27/kg", timeLeftHrs: 96 },
+  { state: "Gujarat", level: "normal", crop: "Cotton", surplusPct: 5, priceNow: "₹ 68/kg", priceWas: "₹ 66/kg", timeLeftHrs: 0 },
+  { state: "Madhya Pradesh", level: "normal", crop: "Soybean", surplusPct: -4, priceNow: "₹ 46/kg", priceWas: "₹ 45/kg", timeLeftHrs: 0 },
+  { state: "Karnataka", level: "deficit", crop: "Tomato", surplusPct: -38, priceNow: "₹ 58/kg", priceWas: "₹ 41/kg", timeLeftHrs: 0 },
+  { state: "Tamil Nadu", level: "deficit", crop: "Onion", surplusPct: -52, priceNow: "₹ 42/kg", priceWas: "₹ 28/kg", timeLeftHrs: 0 },
+  { state: "Rajasthan", level: "normal", crop: "Bajra", surplusPct: 9, priceNow: "₹ 22/kg", priceWas: "₹ 21/kg", timeLeftHrs: 0 },
+  { state: "West Bengal", level: "high", crop: "Potato", surplusPct: 26, priceNow: "₹ 18/kg", priceWas: "₹ 22/kg", timeLeftHrs: 84 },
+  { state: "Odisha", level: "normal", crop: "Maize", surplusPct: 3, priceNow: "₹ 19/kg", priceWas: "₹ 19/kg", timeLeftHrs: 0 },
+];
+
+export const MOCK_REROUTES: Record<string, ReroutePlan> = {
+  Maharashtra: {
+    origin: "Nashik, Maharashtra",
+    originSurplus: "8,400 MT",
+    destination: "Bengaluru, Karnataka",
+    destDeficit: "2,100 MT",
+    distance: "843 km",
+    transit: "18 hours",
+    capacity: "3 × 10T reefer trucks",
+    costFuel: 12400,
+    costToll: 800,
+    costLoading: 2200,
+    netProfit: 124000,
+    localSale: 18000,
+  },
+  Punjab: {
+    origin: "Ludhiana, Punjab",
+    originSurplus: "5,200 MT",
+    destination: "Hyderabad, Telangana",
+    destDeficit: "1,400 MT",
+    distance: "1,210 km",
+    transit: "30 hours",
+    capacity: "2 × 14T trucks",
+    costFuel: 21800,
+    costToll: 1600,
+    costLoading: 3100,
+    netProfit: 186000,
+    localSale: 42000,
+  },
+  "Uttar Pradesh": {
+    origin: "Kanpur, Uttar Pradesh",
+    originSurplus: "4,800 MT",
+    destination: "Nagpur, Maharashtra",
+    destDeficit: "900 MT",
+    distance: "720 km",
+    transit: "16 hours",
+    capacity: "2 × 12T trucks",
+    costFuel: 13900,
+    costToll: 900,
+    costLoading: 2400,
+    netProfit: 98000,
+    localSale: 31000,
+  },
+  "West Bengal": {
+    origin: "Hooghly, West Bengal",
+    originSurplus: "3,100 MT",
+    destination: "Patna, Bihar",
+    destDeficit: "600 MT",
+    distance: "480 km",
+    transit: "10 hours",
+    capacity: "1 × 14T truck",
+    costFuel: 8600,
+    costToll: 500,
+    costLoading: 1600,
+    netProfit: 54000,
+    localSale: 19000,
+  },
+};
+
+// ============ BARTER ============
 export const MOCK_BARTER_LISTINGS: BarterListing[] = [
   {
     id: "barter-1",
     farmerName: "Rajesh Kumar",
-    location: "Punjab, India",
+    location: "Ludhiana, Punjab",
     type: "equipment",
     title: "John Deere 5310 Tractor (45HP)",
     description: "Well-maintained tractor with rotavator attachment. Available for 3-5 day rentals. Diesel (50L/day) not included.",
@@ -68,11 +161,15 @@ export const MOCK_BARTER_LISTINGS: BarterListing[] = [
     available: true,
     rating: 4.8,
     tradesCompleted: 23,
+    distanceKm: 12,
+    pricePerDay: "₹ 2,400/day",
+    creditPerDay: "80 kg wheat-credits/day",
+    dates: "Aug 04 – Aug 11",
   },
   {
     id: "barter-2",
     farmerName: "Lakshmi Devi",
-    location: "Maharashtra, India",
+    location: "Nashik, Maharashtra",
     type: "compost",
     title: "Premium Vermicompost (2 tons)",
     description: "Organic vermicompost produced from cow dung and garden waste. Rich in NPK (2.5-1.5-1.8). Bagged and ready.",
@@ -81,11 +178,15 @@ export const MOCK_BARTER_LISTINGS: BarterListing[] = [
     available: true,
     rating: 4.9,
     tradesCompleted: 47,
+    distanceKm: 8,
+    pricePerDay: "₹ 850/bag",
+    creditPerDay: "45 kg rice-credits/bag",
+    dates: "In stock",
   },
   {
     id: "barter-3",
     farmerName: "Amit Singh",
-    location: "Uttar Pradesh, India",
+    location: "Lucknow, Uttar Pradesh",
     type: "equipment",
     title: "Super Seeder Machine (Happy Seeder)",
     description: "Zero-till happy seeder for wheat sowing. Includes operator training. Fuel covered by user.",
@@ -94,11 +195,15 @@ export const MOCK_BARTER_LISTINGS: BarterListing[] = [
     available: true,
     rating: 4.6,
     tradesCompleted: 15,
+    distanceKm: 27,
+    pricePerDay: "₹ 3,600/day",
+    creditPerDay: "200 kg wheat-credits/day",
+    dates: "Aug 10 – Aug 20",
   },
   {
     id: "barter-4",
     farmerName: "Meena Sharma",
-    location: "Gujarat, India",
+    location: "Surat, Gujarat",
     type: "labor",
     title: "Skilled Harvesting Team (5 workers)",
     description: "Experienced harvesting team available for 1-week engagements. Specialize in mango and cotton harvesting.",
@@ -107,11 +212,15 @@ export const MOCK_BARTER_LISTINGS: BarterListing[] = [
     available: true,
     rating: 4.7,
     tradesCompleted: 31,
+    distanceKm: 44,
+    pricePerDay: "₹ 900/person/day",
+    creditPerDay: "80 kg crop-credits/person/day",
+    dates: "Aug 05 – Aug 12",
   },
   {
     id: "barter-5",
     farmerName: "Suresh Patel",
-    location: "Rajasthan, India",
+    location: "Jaipur, Rajasthan",
     type: "seeds",
     title: "High-Yield Mustard Seeds (Hybrid)",
     description: "DMH-11 hybrid mustard seeds. 25kg bags. Germination rate 95%+. Ideal for rabi season sowing.",
@@ -120,11 +229,15 @@ export const MOCK_BARTER_LISTINGS: BarterListing[] = [
     available: false,
     rating: 4.5,
     tradesCompleted: 19,
+    distanceKm: 61,
+    pricePerDay: "₹ 700/bag",
+    creditPerDay: "35 kg wheat-credits/bag",
+    dates: "Sold out — restocking Aug 15",
   },
   {
     id: "barter-6",
     farmerName: "Priya Verma",
-    location: "Karnataka, India",
+    location: "Mysuru, Karnataka",
     type: "equipment",
     title: "Solar-Powered Water Pump (5HP)",
     description: "DC solar submersible pump with 300W panels. Can irrigate 2 acres. Available on barter for compost or organic inputs.",
@@ -133,9 +246,41 @@ export const MOCK_BARTER_LISTINGS: BarterListing[] = [
     available: true,
     rating: 4.9,
     tradesCompleted: 12,
+    distanceKm: 19,
+    pricePerDay: "₹ 1,500/day",
+    creditPerDay: "90 kg compost-credits/day",
+    dates: "Aug 08 – Aug 15",
+  },
+  {
+    id: "barter-7",
+    farmerName: "Ganesh Kulkarni",
+    location: "Pune, Maharashtra",
+    type: "equipment",
+    title: "Rice Transplanter (Walk-behind)",
+    description: "4-row walk-behind rice transplanter. Covers 1 acre/hour. Operator manual included. Ideal for kharif season.",
+    creditValue: 150,
+    creditUnit: "kg rice credits/day",
+    available: true,
+    rating: 4.4,
+    tradesCompleted: 9,
+    distanceKm: 15,
+    pricePerDay: "₹ 2,800/day",
+    creditPerDay: "150 kg rice-credits/day",
+    dates: "Aug 06 – Aug 14",
   },
 ];
 
+export const EXCHANGE_RATES: ExchangeRate[] = [
+  { crop: "Basmati Rice", creditsPerKg: 1.2, emoji: "🌾" },
+  { crop: "Wheat", creditsPerKg: 1.0, emoji: "🌾" },
+  { crop: "Tomato", creditsPerKg: 0.4, emoji: "🍅" },
+  { crop: "Alphonso Mango", creditsPerKg: 2.8, emoji: "🥭" },
+  { crop: "Onion", creditsPerKg: 0.5, emoji: "🧅" },
+  { crop: "Potato", creditsPerKg: 0.6, emoji: "🥔" },
+  { crop: "Cotton", creditsPerKg: 3.5, emoji: "☁️" },
+];
+
+// ============ LEDGER ============
 export const MOCK_CROP_TRADES: CropCreditTrade[] = [
   {
     id: "trade-1",
@@ -187,11 +332,149 @@ export const MOCK_CROP_TRADES: CropCreditTrade[] = [
   },
 ];
 
+export const MOCK_ESCROW_TRADES: EscrowTrade[] = [
+  {
+    id: "esc-1",
+    hash: "0x7f3a9c1b4d8e2f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f910",
+    type: "Tractor Rental",
+    parties: "Ramesh K. → Sunil P.",
+    amount: "240 wheat-credits",
+    status: "released",
+    time: "2h ago",
+    terms: [
+      "Release 240 wheat-credits to Ramesh K. upon confirmation of tractor return in working condition",
+      "Fuel damage beyond 10% deducted from escrow",
+      "Weather-delay clause: +1 day free of charge if rain > 25mm",
+      "Dispute window closes 48h after release",
+    ],
+    timeline: ["Created 2d ago", "Locked 2d ago", "Goods Confirmed 2h ago", "Released 2h ago"],
+    buyerScore: 96,
+    sellerScore: 91,
+  },
+  {
+    id: "esc-2",
+    hash: "0x2b8e5f7a1c3d4e6f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2",
+    type: "Compost Supply",
+    parties: "GreenFarm Co. → Arjun S.",
+    amount: "80 rice-credits",
+    status: "locked",
+    time: "5m ago",
+    terms: [
+      "80 rice-credits held until 2 tons vermicompost delivered with lab NPK report",
+      "Quality check at receiving FPO within 24 hours",
+      "Short-weight deduction at ₹ 40/kg",
+    ],
+    timeline: ["Created 5m ago", "Locked 5m ago"],
+    buyerScore: 88,
+    sellerScore: 93,
+  },
+  {
+    id: "esc-3",
+    hash: "0x9d1c4f6a8b0d2e4f6a8c0e2f4a6b8c0d2e4f6a8b0c2d4e6f8a0b2c4d6e8f0a2b4c",
+    type: "Labor Pool",
+    parties: "Kaveri FPO → Mohan R.",
+    amount: "₹18,000 + 50 credits",
+    status: "in-transit",
+    time: "23m ago",
+    terms: [
+      "Hybrid settlement: ₹18,000 cash + 50 crop-credits for 5-day harvesting engagement",
+      "50% paid upfront, 50% on completion certificate",
+      "Man-days shortfall credited back at ₹ 1,200/day",
+    ],
+    timeline: ["Created 1d ago", "Locked 22h ago", "Goods Confirmed — crew deployed 23m ago"],
+    buyerScore: 90,
+    sellerScore: 86,
+  },
+  {
+    id: "esc-4",
+    hash: "0x5e8a2c4d6f8a0b2c4e6f8a0b2c4d6f8a0b2c4e6f8a0b2c4d6e8f0a2b4c6d8e0f2a4",
+    type: "Seed Supply",
+    parties: "Bihar Seeds Co. → Kavita Devi",
+    amount: "1,200 maize-credits",
+    status: "released",
+    time: "1d ago",
+    terms: [
+      "1,200 maize-credits released after 95% germination verified by Krishi Vigyan Kendra",
+      "Replacement seed dispatched at seller cost if germination < 90%",
+    ],
+    timeline: ["Created 5d ago", "Locked 4d ago", "Goods Confirmed 1d ago", "Released 1d ago"],
+    buyerScore: 92,
+    sellerScore: 89,
+  },
+  {
+    id: "esc-5",
+    hash: "0xa1f3e5d7c9b1a3c5e7f9a1b3c5d7e9f1a3b5c7d9e1f3a5b7c9d1e3f5a7b9c1d3e5",
+    type: "Water Pump Share",
+    parties: "Priya V. → Hariharan S.",
+    amount: "90 compost-credits",
+    status: "disputed",
+    time: "3h ago",
+    terms: [
+      "90 compost-credits for 7-day solar pump share",
+      "Dispute filed: claimed power output below spec for 2 days",
+      "Arbitration panel: 2 FPO reps + 1 agri-engineer",
+    ],
+    timeline: ["Created 6d ago", "Locked 6d ago", "Goods Confirmed 3d ago", "Dispute filed 3h ago"],
+    buyerScore: 78,
+    sellerScore: 84,
+  },
+  {
+    id: "esc-6",
+    hash: "0xc4e6f8a0b2d4e6f8a0b2c4d6e8f0a2b4c6d8e0f2a4b6c8d0e2f4a6b8c0d2e4f6a8",
+    type: "Onion Storage",
+    parties: "Mahalaxmi Traders → Devi Lal",
+    amount: "₹ 42,000",
+    status: "released",
+    time: "4h ago",
+    terms: [
+      "₹42,000 held for 3-month onion cold-storage contract",
+      "Weight loss tolerance 8%; beyond that, pro-rata deduction",
+    ],
+    timeline: ["Created 95d ago", "Locked 90d ago", "Goods Confirmed 4h ago", "Released 4h ago"],
+    buyerScore: 94,
+    sellerScore: 95,
+  },
+  {
+    id: "esc-7",
+    hash: "0x1b3d5f7a9c1e3f5a7b9c1d3e5f7a9b1c3d5e7f9a1b3c5d7e9f1a3b5c7d9e1f3a5b",
+    type: "Mango Export Lot",
+    parties: "Ratnagiri Fresh → Gulf Import Co.",
+    amount: "₹ 1,84,000",
+    status: "in-transit",
+    time: "1h ago",
+    terms: [
+      "₹1,84,000 escrow for 6.5 MT Alphonso export lot",
+      "Inspection certificate from APEDA required at port",
+      "Cold-chain temp logger data must remain < 13°C",
+    ],
+    timeline: ["Created 2d ago", "Locked 2d ago", "In transit — vessel departed 1h ago"],
+    buyerScore: 97,
+    sellerScore: 90,
+  },
+  {
+    id: "esc-8",
+    hash: "0xe8f0a2b4c6d8e0f2a4b6c8d0e2f4a6b8c0d2e4f6a8b0c2d4e6f8a0b2c4d6e8f0a2",
+    type: "Poultry Feed",
+    parties: "Sunil P. → Meena S.",
+    amount: "400 jowar-credits",
+    status: "cancelled",
+    time: "6h ago",
+    terms: [
+      "400 jowar-credits for 2 tons poultry feed",
+      "Cancelled by mutual consent — moisture content exceeded contract max",
+    ],
+    timeline: ["Created 1d ago", "Locked 1d ago", "Cancelled 6h ago"],
+    buyerScore: 85,
+    sellerScore: 87,
+  },
+];
+
+// ============ CARBON PASSPORT ============
 export const MOCK_CARBON_PASSPORT: CarbonPassport = {
-  batchId: "AGP-CP-2026-07-28-1042",
-  cropType: "Organic Tomatoes",
-  farmer: "Lakshmi Devi",
-  location: "Maharashtra, India",
+  batchId: "CP-2025-MH-00847",
+  cropType: "Organic Tomato",
+  farmer: "Suresh Patil",
+  location: "Ratnagiri, Maharashtra",
   harvestDate: "2026-07-25",
   soilScore: 92,
   solarStoragePercent: 100,
@@ -200,14 +483,153 @@ export const MOCK_CARBON_PASSPORT: CarbonPassport = {
   co2Sequestered: 4.2,
   waterSaved: 12500,
   biodiversityScore: 88,
+  waterEfficiency: 78,
+  carbonFootprint: 0.8,
+  carbonBaseline: 2.4,
+  route: ["Farm", "Local Cold Store", "Distribution Hub", "End Consumer"],
 };
 
+// ============ MARKETPLACE ============
+export const MOCK_PRODUCTS: MarketProduct[] = [
+  { id: "p1", name: "Alphonso Mango", emoji: "🥭", farm: "Ratnagiri Fresh Farms", farmer: "Suresh Patil", location: "Ratnagiri, MH", distanceKm: 48, pricePerKg: 54, grade: "A+", carbonScore: 92, shelfLifeDays: 11, organic: true, carbonCertified: true, passportId: "CP-2025-MH-00847", foodMiles: 340 },
+  { id: "p2", name: "Organic Tomato", emoji: "🍅", farm: "Nashik Valley Produce", farmer: "Ramesh Patil", location: "Nashik, MH", distanceKm: 132, pricePerKg: 42, grade: "A", carbonScore: 88, shelfLifeDays: 9, organic: true, carbonCertified: true, passportId: "CP-2025-MH-00721", foodMiles: 410 },
+  { id: "p3", name: "Basmati Rice", emoji: "🌾", farm: "Karnal Heritage Mills", farmer: "Harjinder Kaur", location: "Karnal, HR", distanceKm: 310, pricePerKg: 64, grade: "A+", carbonScore: 84, shelfLifeDays: 340, organic: true, carbonCertified: false, passportId: "CP-2025-HR-00312", foodMiles: 520 },
+  { id: "p4", name: "Banana (Robusta)", emoji: "🍌", farm: "Kanyakumari Orchards", farmer: "Murugan Pillai", location: "Kanyakumari, TN", distanceKm: 95, pricePerKg: 28, grade: "A-", carbonScore: 79, shelfLifeDays: 6, organic: false, carbonCertified: true, passportId: "CP-2025-TN-00558", foodMiles: 275 },
+  { id: "p5", name: "Onion (Nasik Red)", emoji: "🧅", farm: "Khed Agro Collective", farmer: "Ganesh Kulkarni", location: "Nashik, MH", distanceKm: 140, pricePerKg: 22, grade: "B+", carbonScore: 71, shelfLifeDays: 18, organic: false, carbonCertified: false, passportId: "CP-2025-MH-00290", foodMiles: 150 },
+  { id: "p6", name: "Pomegranate", emoji: "🍎", farm: "Solapur Ruby Farms", farmer: "Sunita Shinde", location: "Solapur, MH", distanceKm: 210, pricePerKg: 88, grade: "A", carbonScore: 86, shelfLifeDays: 21, organic: true, carbonCertified: true, passportId: "CP-2025-MH-00944", foodMiles: 460 },
+  { id: "p7", name: "Green Bell Pepper", emoji: "🫑", farm: "Chikkaballapur Greens", farmer: "Lakshmi Rajan", location: "Chikkaballapur, KA", distanceKm: 62, pricePerKg: 46, grade: "A", carbonScore: 82, shelfLifeDays: 8, organic: true, carbonCertified: false, passportId: "CP-2025-KA-00413", foodMiles: 380 },
+  { id: "p8", name: "Bitter Gourd", emoji: "🥒", farm: "Coimbatore Veg Co-op", farmer: "Selvam Arumugam", location: "Coimbatore, TN", distanceKm: 38, pricePerKg: 34, grade: "A-", carbonScore: 77, shelfLifeDays: 5, organic: true, carbonCertified: false, passportId: "CP-2025-TN-00703", foodMiles: 240 },
+  { id: "p9", name: "Sugarcane (Chewing)", emoji: "🎋", farm: "Kolhapur Sweet Sticks", farmer: "Sagar Jadhav", location: "Kolhapur, MH", distanceKm: 175, pricePerKg: 18, grade: "B+", carbonScore: 69, shelfLifeDays: 4, organic: false, carbonCertified: false, passportId: "CP-2025-MH-00667", foodMiles: 190 },
+  { id: "p10", name: "Turmeric (Fresh)", emoji: "🌱", farm: "Sangli Spice Valley", farmer: "Kavita Deshmukh", location: "Sangli, MH", distanceKm: 228, pricePerKg: 96, grade: "A+", carbonScore: 90, shelfLifeDays: 14, organic: true, carbonCertified: true, passportId: "CP-2025-MH-00812", foodMiles: 420 },
+  { id: "p11", name: "Cauliflower", emoji: "🥦", farm: "Ooty Hills Produce", farmer: "Gopal Krishnan", location: "Ooty, TN", distanceKm: 84, pricePerKg: 32, grade: "A-", carbonScore: 75, shelfLifeDays: 7, organic: true, carbonCertified: false, passportId: "CP-2025-TN-00622", foodMiles: 305 },
+  { id: "p12", name: "Maize (Sweet)", emoji: "🌽", farm: "Belgaum Grain Co-op", farmer: "Anil Kulkarni", location: "Belgaum, KA", distanceKm: 58, pricePerKg: 26, grade: "B+", carbonScore: 72, shelfLifeDays: 6, organic: false, carbonCertified: false, passportId: "CP-2025-KA-00145", foodMiles: 160 },
+];
+
+export const MOCK_CONSUMER_IMPACT: ConsumerImpactPoint[] = [
+  { month: "May", carbonSaved: 8.2, foodMiles: 1120, farmersSupported: 4, organicPct: 71 },
+  { month: "Jun", carbonSaved: 10.6, foodMiles: 1480, farmersSupported: 5, organicPct: 78 },
+  { month: "Jul", carbonSaved: 12.4, foodMiles: 1840, farmersSupported: 7, organicPct: 84 },
+];
+
+// ============ SDG ============
+export const MOCK_SDGS: SDGTarget[] = [
+  {
+    id: "sdg2",
+    number: 2,
+    name: "Zero Hunger",
+    color: "#DDA63A",
+    target: "2.3 & 2.4 — Double agricultural productivity & income of small-scale food producers; ensure sustainable food production systems",
+    how: "AI crop grading maximizes marketable yield, fair-price discovery lifts smallholder income, and smart rerouting moves surplus to deficit regions instead of allowing it to rot.",
+    metric: "Up to 34% reduction in post-harvest losses — FAO 2023 benchmark",
+  },
+  {
+    id: "sdg8",
+    number: 8,
+    name: "Decent Work & Economic Growth",
+    color: "#A21942",
+    target: "8.3 — Promote development-oriented policies that support productive activities, decent job creation, and micro-enterprise development",
+    how: "The barter network and crop-credit ledger enable rural micro-enterprises to transact without banking infrastructure, monetizing idle machinery and labor pools.",
+    metric: "₹ 3,84,000 additional revenue in 47-farmer pilot (Sept 2025)",
+  },
+  {
+    id: "sdg12",
+    number: 12,
+    name: "Responsible Consumption & Production",
+    color: "#BF8B2E",
+    target: "12.3 — Halve per-capita global food waste at retail and consumer levels and reduce food losses along production and supply chains",
+    how: "Shelf-life countdowns optimize dispatch timing; glut detection reroutes oversupply to deficit zones; consumer visibility reduces retail-side spoilage.",
+    metric: "340 MT surplus successfully rerouted during pilot — zero landfill",
+  },
+  {
+    id: "sdg13",
+    number: 13,
+    name: "Climate Action",
+    color: "#3F7E44",
+    target: "13.2 — Integrate climate change measures into national policies, strategies and planning",
+    how: "The Soil-to-Shelf Carbon Passport quantifies emissions per kg (0.8 kg CO₂e vs 2.4 baseline) and rewards zero-emission cold chains with verified credentials.",
+    metric: "0.8 kg CO₂e/kg vs 2.4 baseline = -67% on verified batches",
+  },
+  {
+    id: "sdg17",
+    number: 17,
+    name: "Partnerships for the Goals",
+    color: "#19486A",
+    target: "17.7 — Promote the development, transfer, dissemination and diffusion of environmentally sound technologies to developing countries",
+    how: "The entire platform is offline-first, multilingual (EN/HI/TA/MR), and runs on low-end phones — purpose-built for technology transfer to smallholder agriculture.",
+    metric: "Zero backend + offline queue = usable with 2G connectivity",
+  },
+];
+
+// ============ WEATHER (fallback) ============
+export const MOCK_WEATHER: WeatherData = {
+  source: "mock",
+  temp: 29,
+  condition: "Partly Cloudy",
+  humidity: 68,
+  windSpeed: 11,
+  soilTemp: 27,
+  forecast: [
+    { day: "Today", tMax: 32, tMin: 24, condition: "⛅ Partly Cloudy" },
+    { day: "Tomorrow", tMax: 33, tMin: 25, condition: "🌤 Mostly Sunny" },
+    { day: "Day 3", tMax: 31, tMin: 24, condition: "🌦 Light Rain (20%)" },
+  ],
+  recommendation: "High humidity today — consider harvesting before 10am to minimize mold risk on your tomatoes.",
+};
+
+// ============ ANALYTICS ============
 export const MOCK_GRADE_HISTORY: DailyGradeData[] = [
-  { date: "2026-07-22", label: "Jul 22", avgScore: 87, avgPrice: 2.45, avgCarbonScore: 72, avgSoilScore: 68, submissions: 12, avgShelfLife: 14, topGrade: "A-" },
-  { date: "2026-07-23", label: "Jul 23", avgScore: 91, avgPrice: 2.60, avgCarbonScore: 78, avgSoilScore: 74, submissions: 18, avgShelfLife: 16, topGrade: "A" },
-  { date: "2026-07-24", label: "Jul 24", avgScore: 88, avgPrice: 2.55, avgCarbonScore: 75, avgSoilScore: 71, submissions: 15, avgShelfLife: 13, topGrade: "A-" },
-  { date: "2026-07-25", label: "Jul 25", avgScore: 94, avgPrice: 2.85, avgCarbonScore: 82, avgSoilScore: 79, submissions: 22, avgShelfLife: 18, topGrade: "A" },
-  { date: "2026-07-26", label: "Jul 26", avgScore: 90, avgPrice: 2.70, avgCarbonScore: 80, avgSoilScore: 76, submissions: 19, avgShelfLife: 15, topGrade: "A" },
-  { date: "2026-07-27", label: "Jul 27", avgScore: 93, avgPrice: 2.90, avgCarbonScore: 84, avgSoilScore: 81, submissions: 25, avgShelfLife: 17, topGrade: "A+" },
-  { date: "2026-07-28", label: "Today", avgScore: 96, avgPrice: 3.10, avgCarbonScore: 87, avgSoilScore: 85, submissions: 8, avgShelfLife: 19, topGrade: "A+" },
+  { date: "2026-07-22", label: "Jul 22", avgScore: 87, avgPrice: 2.45, avgCarbonScore: 72, avgSoilScore: 68, submissions: 12, avgShelfLife: 14, topGrade: "A-", waterEfficiency: 70 },
+  { date: "2026-07-23", label: "Jul 23", avgScore: 91, avgPrice: 2.60, avgCarbonScore: 78, avgSoilScore: 74, submissions: 18, avgShelfLife: 16, topGrade: "A", waterEfficiency: 73 },
+  { date: "2026-07-24", label: "Jul 24", avgScore: 88, avgPrice: 2.55, avgCarbonScore: 75, avgSoilScore: 71, submissions: 15, avgShelfLife: 13, topGrade: "A-", waterEfficiency: 71 },
+  { date: "2026-07-25", label: "Jul 25", avgScore: 94, avgPrice: 2.85, avgCarbonScore: 82, avgSoilScore: 79, submissions: 22, avgShelfLife: 18, topGrade: "A", waterEfficiency: 76 },
+  { date: "2026-07-26", label: "Jul 26", avgScore: 90, avgPrice: 2.70, avgCarbonScore: 80, avgSoilScore: 76, submissions: 19, avgShelfLife: 15, topGrade: "A", waterEfficiency: 75 },
+  { date: "2026-07-27", label: "Jul 27", avgScore: 93, avgPrice: 2.90, avgCarbonScore: 84, avgSoilScore: 81, submissions: 25, avgShelfLife: 17, topGrade: "A+", waterEfficiency: 78 },
+  { date: "2026-07-28", label: "Today", avgScore: 96, avgPrice: 3.10, avgCarbonScore: 87, avgSoilScore: 85, submissions: 8, avgShelfLife: 19, topGrade: "A+", waterEfficiency: 81 },
+];
+
+export const MOCK_CROP_MIX: CropMixSlice[] = [
+  { name: "Organic Tomato", value: 34 },
+  { name: "Alphonso Mango", value: 21 },
+  { name: "Basmati Rice", value: 18 },
+  { name: "Potato", value: 12 },
+  { name: "Cotton", value: 9 },
+  { name: "Others", value: 6 },
+];
+
+// ============ IMPACT ============
+export const MOCK_PILOT_STATS: PilotStat[] = [
+  { labelKey: "impact.farmers", value: "47", suffix: "" },
+  { labelKey: "impact.revenue", value: "3,84,000", prefix: "₹ ", suffix: "" },
+  { labelKey: "impact.loss", value: "28", suffix: "%" },
+  { labelKey: "impact.rerouted", value: "340", suffix: " MT" },
+  { labelKey: "impact.trades", value: "12", suffix: "" },
+  { labelKey: "impact.satisfaction", value: "4.7", suffix: "/5" },
+];
+
+export const MOCK_BEFORE_AFTER: BeforeAfterRow[] = [
+  { labelKey: "impact.metric1", before: "₹ 8/kg", after: "₹ 28/kg", change: "+250%" },
+  { labelKey: "impact.metric2", before: "34%", after: "24.5%", change: "-28%" },
+  { labelKey: "impact.metric3", before: "6.2 days", after: "2.1 days", change: "-66%" },
+  { labelKey: "impact.metric4", before: "12%", after: "100%", change: "+733%" },
+];
+
+export const MOCK_TESTIMONIALS: Testimonial[] = [
+  {
+    name: "Ramesh Patil",
+    village: "Nashik, Maharashtra",
+    crop: "Tomato Farmer",
+    quote: "Before AgriPulse, I had no idea my tomatoes were worth three times more in Bengaluru. In September, I rerouted 4 MT and earned ₹ 1,12,000 instead of ₹ 28,000 locally.",
+  },
+  {
+    name: "Harjinder Kaur",
+    village: "Ludhiana, Punjab",
+    crop: "Wheat & Rice Farmer",
+    quote: "I listed my idle seeder on the barter network and received 2 tons of compost plus a week of harvest labor — no cash needed. It's like having a cooperative in my pocket.",
+  },
+  {
+    name: "Murugan Pillai",
+    village: "Kanyakumari, Tamil Nadu",
+    crop: "Banana Farmer",
+    quote: "The voice assistant understands my Tamil. I asked for today's price and got the mandi rate instantly. My bananas now sell at 42/kg instead of 28/kg.",
+  },
 ];

@@ -1,17 +1,26 @@
 {
-  "name": "freebuff.com application",
-  "short_name": "freebuff.com",
-  "description": "freebuff.com application",
+  "name": "AgriPulse AI — Autonomous Agtech Command Center",
+  "short_name": "AgriPulse AI",
+  "description": "AI crop grading, glut detection & rerouting, barter network, carbon passports, and smart-contract escrow — fully offline-first.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "orientation": "portrait-primary",
+  "background_color": "#0F1117",
+  "theme_color": "#10B981",
+  "categories": ["agriculture", "productivity", "weather"],
   "icons": [
     {
-      "src": "/logo.png",
+      "src": "/icons/agripulse.svg",
       "sizes": "any",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/agripulse-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ]
 }
